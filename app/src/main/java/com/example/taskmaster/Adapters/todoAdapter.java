@@ -1,6 +1,7 @@
 package com.example.taskmaster.Adapters;
 
 import android.content.Context;
+import android.database.Cursor;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,6 +11,8 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.taskmaster.R;
+import com.example.taskmaster.data.notesContract;
+import com.example.taskmaster.data.todoContract;
 
 import org.w3c.dom.Text;
 
@@ -17,7 +20,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 public class todoAdapter extends RecyclerView.Adapter<todoAdapter.todoViewHolder> {
-    private ArrayList<HashMap<String, String>> todoData;
+    private Cursor mCursor;
 
     final private ListItemOnClickListener mOnCLickListener;
 
@@ -25,8 +28,9 @@ public class todoAdapter extends RecyclerView.Adapter<todoAdapter.todoViewHolder
         void onClickTodo(HashMap<String ,String> todo);
     }
 
-    public todoAdapter(ListItemOnClickListener listener) {
+    public todoAdapter(ListItemOnClickListener listener, Cursor cursor) {
         mOnCLickListener = listener;
+        mCursor = cursor;
     }
 
     @NonNull
@@ -50,13 +54,15 @@ public class todoAdapter extends RecyclerView.Adapter<todoAdapter.todoViewHolder
 
     @Override
     public int getItemCount() {
-        if (null == todoData) return 0;
-        return todoData.size();
+        return mCursor.getCount();
     }
 
-    public void setTodoData(ArrayList<HashMap<String, String>> todo) {
-        todoData = todo;
-        notifyDataSetChanged();
+    public void swapCursor(Cursor newCursor) {
+        if (mCursor != null) mCursor.close();
+        mCursor = newCursor;
+        if (newCursor != null) {
+            this.notifyDataSetChanged();
+        }
     }
 
     public class todoViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
@@ -70,7 +76,17 @@ public class todoAdapter extends RecyclerView.Adapter<todoAdapter.todoViewHolder
         }
 
         public void bind(int position) {
-            mTodos.setText("Hello From Todos Adapter");
+
+            if (!mCursor.moveToPosition(position)) {
+                return;
+            }
+
+            String body = mCursor.getString(mCursor.getColumnIndex(todoContract.todoEntry.COLUMN_BODY));
+            String priority = mCursor.getString(mCursor.getColumnIndex(todoContract.todoEntry.COLUMN_PRIORITY));
+
+            mTodos.setText(body);
+            mTodos.append("\n" + priority);
+
         }
 
         @Override

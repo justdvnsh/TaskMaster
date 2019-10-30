@@ -1,6 +1,8 @@
 package com.example.taskmaster.Adapters;
 
 import android.content.Context;
+import android.database.Cursor;
+import android.icu.text.CaseMap;
 import android.location.GpsStatus;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -11,12 +13,13 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.taskmaster.R;
+import com.example.taskmaster.data.notesContract;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 
 public class noteAdapter extends RecyclerView.Adapter<noteAdapter.noteViewHolder>{
-    private ArrayList<HashMap<String, String>> noteData;
+    private Cursor mCursor;
 
     final private ListItemOnClickListener mOnClickListener;
 
@@ -24,8 +27,9 @@ public class noteAdapter extends RecyclerView.Adapter<noteAdapter.noteViewHolder
         void onClickNotes(HashMap<String, String> note);
     }
 
-    public noteAdapter(ListItemOnClickListener listener) {
+    public noteAdapter(ListItemOnClickListener listener, Cursor cursor) {
         mOnClickListener = listener;
+        mCursor = cursor;
     }
 
     @NonNull
@@ -49,13 +53,15 @@ public class noteAdapter extends RecyclerView.Adapter<noteAdapter.noteViewHolder
 
     @Override
     public int getItemCount() {
-        if ( null == noteData ) return 0;
-        return noteData.size();
+        return mCursor.getCount();
     }
 
-    public void setNoteData(ArrayList<HashMap<String, String>> notesData) {
-        noteData = notesData;
-        notifyDataSetChanged();
+    public void swapCursor(Cursor newCursor) {
+        if (mCursor != null) mCursor.close();
+        mCursor = newCursor;
+        if (newCursor != null) {
+            this.notifyDataSetChanged();
+        }
     }
 
     public class noteViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
@@ -70,7 +76,15 @@ public class noteAdapter extends RecyclerView.Adapter<noteAdapter.noteViewHolder
 
         public void bind(int position) {
 
-            mNotes.setText("Hello From Notes Adapter");
+            if (!mCursor.moveToPosition(position)) {
+                return ;
+            }
+
+            String title = mCursor.getString(mCursor.getColumnIndex(notesContract.notesEntry.COLUMN_TITLE));
+            String body = mCursor.getString(mCursor.getColumnIndex(notesContract.notesEntry.COLUMN_BODY));
+
+            mNotes.setText(title);
+            mNotes.append(" \n " + body);
 
         }
 

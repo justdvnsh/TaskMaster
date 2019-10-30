@@ -2,20 +2,28 @@ package com.example.taskmaster;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 
 import com.example.taskmaster.Adapters.noteAdapter;
 import com.example.taskmaster.Adapters.todoAdapter;
+import com.example.taskmaster.data.notesContract;
+import com.example.taskmaster.data.notesDbHelper;
+import com.example.taskmaster.data.todoContract;
+import com.example.taskmaster.data.todoDbHelper;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.util.Log;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -23,12 +31,41 @@ import android.widget.TextView;
 
 import java.util.HashMap;
 
-public class MainActivity extends AppCompatActivity implements noteAdapter.ListItemOnClickListener, todoAdapter.ListItemOnClickListener{
+public class MainActivity extends AppCompatActivity implements noteAdapter.ListItemOnClickListener, todoAdapter.ListItemOnClickListener, SharedPreferences.OnSharedPreferenceChangeListener {
 
+
+    SharedPreferences sharedPreferences;
     RecyclerView mRecycleNotes;
     RecyclerView mRecycleTodo;
-    noteAdapter mAdapterNotes;
-    todoAdapter mAdapterTodo;
+    static noteAdapter mAdapterNotes;
+    static todoAdapter mAdapterTodo;
+
+    protected static SQLiteDatabase mDb;
+    protected static SQLiteDatabase mDbTodo;
+
+    protected static Cursor getAllNotes() {
+        return mDb.query(
+                notesContract.notesEntry.TABLE_NAME,
+                null,
+                null,
+                null,
+                null,
+                null,
+                notesContract.notesEntry.COLUMN_TIMESTAMP
+        );
+    }
+
+    protected static Cursor getAllTodos() {
+        return mDbTodo.query(
+                todoContract.todoEntry.TABLE_NAME,
+                null,
+                null,
+                null,
+                null,
+                null,
+                todoContract.todoEntry.COLUMN_TIMESTAMP
+        );
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,38 +76,48 @@ public class MainActivity extends AppCompatActivity implements noteAdapter.ListI
 
         mRecycleNotes = (RecyclerView) findViewById(R.id.note_recycler_view);
         mRecycleTodo = (RecyclerView) findViewById(R.id.todo_recycler_view);
-        TextView mSomething = (TextView) findViewById(R.id.something);
 
-        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-        if (sharedPreferences.getBoolean(getString(R.string.pref_taskmaster_key), false)) {
+        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        sharedPreferences.registerOnSharedPreferenceChangeListener(this);
+        Log.i("PREFERNECE", String.valueOf(sharedPreferences.getBoolean(getString(R.string.pref_taskmaster_key), false)));
+        if (sharedPreferences.getBoolean(getString(R.string.pref_taskmaster_key), false) == false) {
             mRecycleNotes.setVisibility(View.VISIBLE);
             mRecycleTodo.setVisibility(View.GONE);
             GridLayoutManager gridLayoutManager = new GridLayoutManager(getApplicationContext(), 2);
-            gridLayoutManager.setOrientation(RecyclerView.VERTICAL);
-            mRecycleTodo.setLayoutManager(gridLayoutManager);
-            mRecycleTodo.setHasFixedSize(true);
+            mRecycleNotes.setLayoutManager(gridLayoutManager);
+            mRecycleNotes.setHasFixedSize(true);
 
-            mAdapterNotes = new noteAdapter(this);
+            notesDbHelper dbHelper = new notesDbHelper(this);
+            mDb = dbHelper.getWritableDatabase();
+            Cursor cursor = getAllNotes();
+
+            mAdapterNotes = new noteAdapter(this, cursor);
             mRecycleNotes.setAdapter(mAdapterNotes);
-            mSomething.setText("Somthing false");
         } else {
             mRecycleNotes.setVisibility(View.GONE);
             mRecycleTodo.setVisibility(View.VISIBLE);
             LinearLayoutManager layoutManager = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
             mRecycleTodo.setLayoutManager(layoutManager);
 
-            mAdapterTodo = new todoAdapter(this);
-            mRecycleTodo.setAdapter(mAdapterTodo);
-            mSomething.setText("Something true");
-        }
+            todoDbHelper dbHelper = new todoDbHelper(this);
+            mDbTodo = dbHelper.getWritableDatabase();
+            Cursor cursor = getAllTodos();
 
+            mAdapterTodo = new todoAdapter(this, cursor);
+            mRecycleTodo.setAdapter(mAdapterTodo);
+        }
 
         FloatingActionButton fab = findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent = new Intent(MainActivity.this, AddActivity.class);
-                startActivity(intent);
+                if (sharedPreferences.getBoolean(getString(R.string.pref_taskmaster_key), false) == false) {
+                    Intent intent = new Intent(MainActivity.this, AddActivity.class);
+                    startActivity(intent);
+                } else {
+                    Intent intent = new Intent(MainActivity.this, addTodoActivity.class);
+                    startActivity(intent);
+                }
             }
         });
     }
@@ -106,5 +153,19 @@ public class MainActivity extends AppCompatActivity implements noteAdapter.ListI
     @Override
     public void onClickTodo(HashMap<String, String> todo) {
 
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        PreferenceManager.getDefaultSharedPreferences(this).unregisterOnSharedPreferenceChangeListener(this);
+    }
+
+    @Override
+    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String s) {
+        if ( s.equals(getString(R.string.pref_taskmaster_key)) ) {
+            Intent intent = new Intent(MainActivity.this, MainActivity.class);
+            startActivity(intent);
+        }
     }
 }

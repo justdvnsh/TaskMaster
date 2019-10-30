@@ -8,11 +8,6 @@
     tools:context=".MainActivity"
     tools:showIn="@layout/activity_main">
 
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/something"/>
-
     <androidx.recyclerview.widget.RecyclerView
         android:layout_height="wrap_content"
         android:layout_width="match_parent"

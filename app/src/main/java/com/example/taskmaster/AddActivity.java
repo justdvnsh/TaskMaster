@@ -5,11 +5,15 @@ import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.NavUtils;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.EditText;
 
 public class AddActivity extends AppCompatActivity {
+
+    EditText mNotes;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -21,6 +25,8 @@ public class AddActivity extends AppCompatActivity {
         if (actionBar != null) {
             actionBar.setDisplayHomeAsUpEnabled(true);
         }
+
+        mNotes = (EditText) findViewById(R.id.add_note_layout);
     }
 
     @Override
@@ -38,7 +44,9 @@ public class AddActivity extends AppCompatActivity {
         }
 
         if (id == R.id.add_note) {
-            // do something
+            Intent intent = new Intent(AddActivity.this, addTitleActivity.class);
+            intent.putExtra("note", mNotes.getText().toString());
+            startActivity(intent);
         }
 
         return super.onOptionsItemSelected(item);
