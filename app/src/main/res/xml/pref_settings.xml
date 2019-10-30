@@ -4,5 +4,6 @@
         android:title="@string/pref_taskmaster_title"
         android:key="@string/pref_taskmaster_key"
         android:summaryOn="@string/pref_taskmaster_summary_on"
-        android:summaryOff="@string/pref_taskmaster_summary_off"/>
+        android:summaryOff="@string/pref_taskmaster_summary_off"
+        android:defaultValue="false"/>
 </PreferenceScreen>
