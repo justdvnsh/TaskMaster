@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">TaskMaster</string>
+    <string name="action_settings">Settings</string>
+    <string name="pref_taskmaster_title">Change TaskMaster</string>
+    <string name="pref_taskmaster_key">change_taskmaster</string>
+    <string name="pref_taskmaster_summary_off">Changed to Note App</string>
+    <string name="pref_taskmaster_summary_on">Changed to To-Do app</string>
+</resources>
