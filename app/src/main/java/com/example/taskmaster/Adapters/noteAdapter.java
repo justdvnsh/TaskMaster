@@ -82,6 +82,8 @@ public class noteAdapter extends RecyclerView.Adapter<noteAdapter.noteViewHolder
 
             String title = mCursor.getString(mCursor.getColumnIndex(notesContract.notesEntry.COLUMN_TITLE));
             String body = mCursor.getString(mCursor.getColumnIndex(notesContract.notesEntry.COLUMN_BODY));
+            long id = mCursor.getLong(mCursor.getColumnIndex(notesContract.notesEntry._ID));
+            itemView.setTag(id);
 
             mNotes.setText(title);
             mNotes.append(" \n " + body);

@@ -17,7 +17,6 @@ import com.example.taskmaster.data.todoContract;
 public class addTodoActivity extends AppCompatActivity {
 
     EditText mAddTodo;
-    String todo;
     String priority = "high";
 
     private long addNewTodo(String body, String priority) {
@@ -55,7 +54,7 @@ public class addTodoActivity extends AppCompatActivity {
         }
         if (id == R.id.save_note) {
             addNewTodo(mAddTodo.getText().toString(), priority);
-            MainActivity.mAdapterNotes.swapCursor(MainActivity.getAllTodos());
+            MainActivity.mAdapterTodo.swapCursor(MainActivity.getAllTodos());
             NavUtils.navigateUpFromSameTask(this);
         }
         return super.onOptionsItemSelected(item);

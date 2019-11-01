@@ -15,11 +15,13 @@ import com.example.taskmaster.data.todoDbHelper;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -93,6 +95,7 @@ public class MainActivity extends AppCompatActivity implements noteAdapter.ListI
 
             mAdapterNotes = new noteAdapter(this, cursor);
             mRecycleNotes.setAdapter(mAdapterNotes);
+            implementSwipeDelete("notes", mRecycleNotes);
         } else {
             mRecycleNotes.setVisibility(View.GONE);
             mRecycleTodo.setVisibility(View.VISIBLE);
@@ -105,6 +108,7 @@ public class MainActivity extends AppCompatActivity implements noteAdapter.ListI
 
             mAdapterTodo = new todoAdapter(this, cursor);
             mRecycleTodo.setAdapter(mAdapterTodo);
+            implementSwipeDelete("todos", mRecycleTodo);
         }
 
         FloatingActionButton fab = findViewById(R.id.fab);
@@ -143,6 +147,37 @@ public class MainActivity extends AppCompatActivity implements noteAdapter.ListI
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    private boolean removeNotes(long id) {
+        return mDb.delete(notesContract.notesEntry.TABLE_NAME,
+                            notesContract.notesEntry._ID + "=" + id, null) > 0;
+    }
+
+    private boolean removeTodos (long id) {
+        return mDbTodo.delete(todoContract.todoEntry.TABLE_NAME,
+                todoContract.todoEntry._ID + "=" + id, null) > 0;
+    }
+
+    private void implementSwipeDelete(final String task, RecyclerView view) {
+        new ItemTouchHelper(new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT) {
+            @Override
+            public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, @NonNull RecyclerView.ViewHolder target) {
+                return false;
+            }
+
+            @Override
+            public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
+                long id = (long) viewHolder.itemView.getTag();
+                if (task == "notes") {
+                    removeNotes(id);
+                    mAdapterNotes.swapCursor(MainActivity.getAllNotes());
+                } else if (task == "todos") {
+                    removeTodos(id);
+                    mAdapterTodo.swapCursor(MainActivity.getAllTodos());
+                }
+            }
+        }).attachToRecyclerView(view);
     }
 
     @Override

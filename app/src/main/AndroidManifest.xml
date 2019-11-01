@@ -11,7 +11,8 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".addTodoActivity"></activity>
+        <activity android:name=".addTodoActivity"
+            android:parentActivityName=".MainActivity"></activity>
         <activity
             android:name=".addTitleActivity"
             android:parentActivityName=".MainActivity" />

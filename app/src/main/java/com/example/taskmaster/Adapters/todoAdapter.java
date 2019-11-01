@@ -83,6 +83,8 @@ public class todoAdapter extends RecyclerView.Adapter<todoAdapter.todoViewHolder
 
             String body = mCursor.getString(mCursor.getColumnIndex(todoContract.todoEntry.COLUMN_BODY));
             String priority = mCursor.getString(mCursor.getColumnIndex(todoContract.todoEntry.COLUMN_PRIORITY));
+            long id = mCursor.getLong(mCursor.getColumnIndex(todoContract.todoEntry._ID));
+            itemView.setTag(id);
 
             mTodos.setText(body);
             mTodos.append("\n" + priority);

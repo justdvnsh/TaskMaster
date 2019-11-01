@@ -21,7 +21,6 @@ public class addTitleActivity extends AppCompatActivity {
 
     EditText mAddTitle;
     String note;
-    String title;
 
     private long addNewNote(String body, String title) {
         ContentValues cv = new ContentValues();
