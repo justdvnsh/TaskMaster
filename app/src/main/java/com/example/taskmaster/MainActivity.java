@@ -13,23 +13,19 @@ import com.example.taskmaster.data.notesDbHelper;
 import com.example.taskmaster.data.todoContract;
 import com.example.taskmaster.data.todoDbHelper;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.android.material.snackbar.Snackbar;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
-import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import android.util.Log;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.TextView;
 
 import java.util.HashMap;
 
@@ -81,7 +77,7 @@ public class MainActivity extends AppCompatActivity implements noteAdapter.ListI
 
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         sharedPreferences.registerOnSharedPreferenceChangeListener(this);
-        Log.i("PREFERNECE", String.valueOf(sharedPreferences.getBoolean(getString(R.string.pref_taskmaster_key), false)));
+
         if (sharedPreferences.getBoolean(getString(R.string.pref_taskmaster_key), false) == false) {
             mRecycleNotes.setVisibility(View.VISIBLE);
             mRecycleTodo.setVisibility(View.GONE);
