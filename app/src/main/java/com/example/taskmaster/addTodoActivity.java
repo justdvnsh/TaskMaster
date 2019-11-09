@@ -6,6 +6,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.NavUtils;
 
 import android.content.ContentValues;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -37,11 +38,14 @@ public class addTodoActivity extends AppCompatActivity {
 
     }
 
-    private long addNewTodo(String body, String priority) {
+    private void addNewTodo(String body, String priority) {
         ContentValues cv = new ContentValues();
         cv.put(todoContract.todoEntry.COLUMN_BODY, body);
         cv.put(todoContract.todoEntry.COLUMN_PRIORITY, priority);
-        return MainActivity.mDbTodo.insert(todoContract.todoEntry.TABLE_NAME, null, cv);
+
+        Uri uri = getContentResolver().insert(todoContract.todoEntry.CONTENT_URI, cv);
+
+        finish();
     }
 
     @Override
@@ -78,8 +82,8 @@ public class addTodoActivity extends AppCompatActivity {
                 Toast.makeText(getApplicationContext(), "You need to set in a priority", Toast.LENGTH_SHORT).show();
             } else {
                 addNewTodo(mAddTodo.getText().toString(), priority);
-                MainActivity.mAdapterTodo.swapCursor(MainActivity.getAllTodos());
-                NavUtils.navigateUpFromSameTask(this);
+//                MainActivity.mAdapterTodo.swapCursor(MainActivity.getAllTodos());
+//                NavUtils.navigateUpFromSameTask(this);
             }
         }
         return super.onOptionsItemSelected(item);

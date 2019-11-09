@@ -15,8 +15,12 @@ import com.example.taskmaster.data.todoDbHelper;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.loader.app.LoaderManager;
+import androidx.loader.content.AsyncTaskLoader;
+import androidx.loader.content.Loader;
 import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.ItemTouchHelper;
@@ -29,7 +33,7 @@ import android.view.MenuItem;
 
 import java.util.HashMap;
 
-public class MainActivity extends AppCompatActivity implements noteAdapter.ListItemOnClickListener, todoAdapter.ListItemOnClickListener, SharedPreferences.OnSharedPreferenceChangeListener {
+public class MainActivity extends AppCompatActivity implements noteAdapter.ListItemOnClickListener, todoAdapter.ListItemOnClickListener, SharedPreferences.OnSharedPreferenceChangeListener, LoaderManager.LoaderCallbacks<Cursor> {
 
 
     SharedPreferences sharedPreferences;
@@ -37,6 +41,8 @@ public class MainActivity extends AppCompatActivity implements noteAdapter.ListI
     RecyclerView mRecycleTodo;
     static noteAdapter mAdapterNotes;
     static todoAdapter mAdapterTodo;
+
+    private static final int TODO_LOADER_ID = 1;
 
     protected static SQLiteDatabase mDb;
     protected static SQLiteDatabase mDbTodo;
@@ -105,6 +111,8 @@ public class MainActivity extends AppCompatActivity implements noteAdapter.ListI
             mAdapterTodo = new todoAdapter(this, cursor);
             mRecycleTodo.setAdapter(mAdapterTodo);
             implementSwipeDelete("todos", mRecycleTodo);
+
+            getSupportLoaderManager().initLoader(TODO_LOADER_ID, null, this);
         }
 
         FloatingActionButton fab = findViewById(R.id.fab);
@@ -193,10 +201,65 @@ public class MainActivity extends AppCompatActivity implements noteAdapter.ListI
     }
 
     @Override
+    protected void onResume() {
+        super.onResume();
+        getSupportLoaderManager().restartLoader(TODO_LOADER_ID, null, this);
+    }
+
+    @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String s) {
         if ( s.equals(getString(R.string.pref_taskmaster_key)) ) {
             Intent intent = new Intent(MainActivity.this, MainActivity.class);
             startActivity(intent);
         }
+    }
+
+    @NonNull
+    @Override
+    public Loader<Cursor> onCreateLoader(int id, final Bundle args) {
+        return new AsyncTaskLoader<Cursor>(this) {
+
+            Cursor mTodoData = null;
+
+            @Override
+            protected void onStartLoading() {
+                if (mTodoData != null) {
+                    deliverResult(mTodoData);
+                } else {
+                    forceLoad();
+                }
+            }
+
+            @Nullable
+            @Override
+            public Cursor loadInBackground() {
+                try {
+                    return getContentResolver().query(todoContract.todoEntry.CONTENT_URI,
+                            null,
+                            null,
+                            null,
+                            null);
+
+                } catch(Exception e) {
+                    e.printStackTrace();
+                    return null;
+                }
+            }
+
+            public void deliverResult(Cursor data) {
+                mTodoData = data;
+                super.deliverResult(data);
+            }
+        };
+    }
+
+    @Override
+    public void onLoadFinished(@NonNull Loader<Cursor> loader, Cursor data) {
+        mAdapterTodo.swapCursor(data);
+    }
+
+    @Override
+    public void onLoaderReset(@NonNull Loader<Cursor> loader) {
+        mAdapterTodo.swapCursor(null);
     }
 }

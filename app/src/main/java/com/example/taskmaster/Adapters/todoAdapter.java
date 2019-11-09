@@ -57,12 +57,20 @@ public class todoAdapter extends RecyclerView.Adapter<todoAdapter.todoViewHolder
         return mCursor.getCount();
     }
 
-    public void swapCursor(Cursor newCursor) {
-        if (mCursor != null) mCursor.close();
-        mCursor = newCursor;
-        if (newCursor != null) {
+    public Cursor swapCursor(Cursor c) {
+        // check if this cursor is the same as the previous cursor (mCursor)
+        if (mCursor == c) {
+            return null; // bc nothing has changed
+        }
+        Cursor temp = mCursor;
+        this.mCursor = c; // new cursor value assigned
+
+        //check if this is a valid cursor, then update the cursor
+        if (c != null) {
             this.notifyDataSetChanged();
         }
+        return temp;
+
     }
 
     public class todoViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
