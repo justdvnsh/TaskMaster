@@ -113,16 +113,24 @@ public class TodoTaskContentProvider extends ContentProvider {
         final SQLiteDatabase db = mtodoDbHelper.getWritableDatabase();
         int match = sUriMatcher.match(uri);
 
-        Cursor retCursor;
+        int todoDelete;
 
         switch (match) {
             case TODOS_WITH_ID:
                 String id = uri.getPathSegments().get(1);
                 String mSelection = "_id=?";
                 String[] mSelectionArgs = new String[]{id};
-                retCursor = db.delete(TABLE_NAME, mSelection, mSelectionArgs);
+                todoDelete = db.delete(TABLE_NAME, mSelection, mSelectionArgs);
                 break;
+            default:
+                throw new UnsupportedOperationException("Unkown Uri Exception" + uri);
         }
+
+        if (todoDelete != 0) {
+            getContext().getContentResolver().notifyChange(uri, null);
+        }
+
+        return todoDelete;
     }
 
     @Override

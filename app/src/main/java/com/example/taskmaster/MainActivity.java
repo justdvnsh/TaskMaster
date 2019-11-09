@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.net.Uri;
 import android.os.Bundle;
 
 import com.example.taskmaster.Adapters.noteAdapter;
@@ -158,9 +159,12 @@ public class MainActivity extends AppCompatActivity implements noteAdapter.ListI
                             notesContract.notesEntry._ID + "=" + id, null) > 0;
     }
 
-    private boolean removeTodos (long id) {
-        return mDbTodo.delete(todoContract.todoEntry.TABLE_NAME,
-                todoContract.todoEntry._ID + "=" + id, null) > 0;
+    private void removeTodos (long id) {
+        String idString = String.valueOf(id);
+        Uri uri = todoContract.todoEntry.CONTENT_URI;
+        uri = uri.buildUpon().appendPath(idString).build();
+        getContentResolver().delete(uri, null, null);
+        getSupportLoaderManager().restartLoader(TODO_LOADER_ID, null, this);
     }
 
     private void implementSwipeDelete(final String task, RecyclerView view) {
@@ -178,7 +182,6 @@ public class MainActivity extends AppCompatActivity implements noteAdapter.ListI
                     mAdapterNotes.swapCursor(MainActivity.getAllNotes());
                 } else if (task == "todos") {
                     removeTodos(id);
-                    mAdapterTodo.swapCursor(MainActivity.getAllTodos());
                 }
             }
         }).attachToRecyclerView(view);
